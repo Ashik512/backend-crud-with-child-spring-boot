@@ -15,4 +15,6 @@ public interface StoreDemandService {
     void delete(Long id);
 
     List<StoreDemandResponseDto> getAll();
+
+    StoreDemandResponseDto getSingle(Long id);
 }

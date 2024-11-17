@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.StoreDemand;
+import com.example.demo.exceptions.ResourceNotFoundException;
 import com.example.demo.payload.request.StoreDemandDetailsDto;
 import com.example.demo.payload.request.StoreDemandDto;
 import com.example.demo.payload.response.StoreDemandResponseDto;
@@ -40,9 +41,9 @@ public class StoreDemandServiceImpl implements StoreDemandService {
 
     @Override
     public StoreDemand update(StoreDemandDto storeDemandDto, Long id) {
-       // Step 1:Fetch the existing StoreDemand
+        // Step 1:Fetch the existing StoreDemand
         StoreDemand existingStoreDemand = storeDemandRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("StoreDemand not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Store Demand", "id", id));
 
         updateEntity(existingStoreDemand, storeDemandDto);
 
@@ -54,11 +55,11 @@ public class StoreDemandServiceImpl implements StoreDemandService {
 
     @Override
     public void delete(Long id) {
-        try {
-            storeDemandRepository.deleteById(id);
-        } catch (Exception e) {
-            log.error("e: ", e.getMessage());
-        }
+        // Step 1:Fetch the existing StoreDemand
+        StoreDemand existingStoreDemand = storeDemandRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Store Demand", "id", id));
+
+        storeDemandRepository.delete(existingStoreDemand);
     }
 
     @Override
@@ -68,34 +69,45 @@ public class StoreDemandServiceImpl implements StoreDemandService {
         return convertToResponseDto(demandList);
     }
 
+    @Override
+    public StoreDemandResponseDto getSingle(Long id) {
+        StoreDemand storeDemand = storeDemandRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Store Demand", "id", id));
+
+        return convertToSingleResponseDto(storeDemand);
+
+    }
+
     public List<StoreDemandResponseDto> convertToResponseDto(List<StoreDemand> demandList) {
-        return demandList.stream().map(storeDemand -> {
-            // Map StoreDemand entity to StoreDemandResponseDto
-            StoreDemandResponseDto responseDto = new StoreDemandResponseDto();
-            responseDto.setId(storeDemand.getId());
-            responseDto.setDepartmentType(storeDemand.getDepartmentType());
-            responseDto.setVoucherNo(storeDemand.getVoucherNo());
-            responseDto.setValidTill(storeDemand.getValidTill());
-            responseDto.setWorkOrderNo(storeDemand.getWorkOrderNo());
-            responseDto.setRemarks(storeDemand.getRemarks());
+        return demandList.stream().map(this::convertToSingleResponseDto).collect(Collectors.toList());
+    }
 
-            // Map StoreDemandItem list to StoreDemandDetailsDto list
-            List<StoreDemandDetailsDto> detailsDtoList = storeDemand.getStoreDemandItemList().stream()
-                    .map(item -> {
-                        StoreDemandDetailsDto detailsDto = new StoreDemandDetailsDto();
-                        detailsDto.setId(item.getId());
-                        detailsDto.setQuantityDemanded(item.getQuantityDemanded());
-                        detailsDto.setTotalIssuedQty(item.getIssuedQty());
-                        detailsDto.setPriorityType(item.getPriorityType());
-                        detailsDto.setIpcCmm(item.getIpcCmm());
-                        return detailsDto;
-                    })
-                    .collect(Collectors.toList());
+    private StoreDemandResponseDto convertToSingleResponseDto(StoreDemand storeDemand) {
+        // Map StoreDemand entity to StoreDemandResponseDto
+        StoreDemandResponseDto responseDto = new StoreDemandResponseDto();
+        responseDto.setId(storeDemand.getId());
+        responseDto.setDepartmentType(storeDemand.getDepartmentType());
+        responseDto.setVoucherNo(storeDemand.getVoucherNo());
+        responseDto.setValidTill(storeDemand.getValidTill());
+        responseDto.setWorkOrderNo(storeDemand.getWorkOrderNo());
+        responseDto.setRemarks(storeDemand.getRemarks());
 
-            responseDto.setStoreDemandDetailsDtoList(detailsDtoList);
+        // Map StoreDemandItem list to StoreDemandDetailsDto list
+        List<StoreDemandDetailsDto> detailsDtoList = storeDemand.getStoreDemandItemList().stream()
+                .map(item -> {
+                    StoreDemandDetailsDto detailsDto = new StoreDemandDetailsDto();
+                    detailsDto.setId(item.getId());
+                    detailsDto.setQuantityDemanded(item.getQuantityDemanded());
+                    detailsDto.setTotalIssuedQty(item.getIssuedQty());
+                    detailsDto.setPriorityType(item.getPriorityType());
+                    detailsDto.setIpcCmm(item.getIpcCmm());
+                    return detailsDto;
+                })
+                .collect(Collectors.toList());
 
-            return responseDto;
-        }).collect(Collectors.toList());
+        responseDto.setStoreDemandDetailsDtoList(detailsDtoList);
+
+        return responseDto;
     }
 
 

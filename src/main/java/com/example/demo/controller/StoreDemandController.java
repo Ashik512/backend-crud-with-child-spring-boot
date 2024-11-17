@@ -56,6 +56,12 @@ public class StoreDemandController {
         return storeDemandService.getAll();
     }
 
+    @GetMapping("/{id}")
+    public StoreDemandResponseDto getSingle(@PathVariable Long id) {
+
+        return storeDemandService.getSingle(id);
+    }
+
 
 
 }
