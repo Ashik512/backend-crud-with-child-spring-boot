@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 public class StoreDemandDetailsDto {
     private Long id;
-    @NotNull
+    @NotNull(message = "Demanded quantity must not be null!")
     @Min(value = 0)
     private Integer quantityDemanded;
     private Integer totalIssuedQty;

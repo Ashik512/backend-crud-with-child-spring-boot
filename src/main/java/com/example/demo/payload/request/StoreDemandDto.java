@@ -19,9 +19,9 @@ public class StoreDemandDto {
     private DepartmentType departmentType;
     private String voucherNo;
     private LocalDate validTill;
-    @Size(max = 8000)
+    @Size(max = 10, message = "message must be between 10 characters!")
     private String remarks;
-    @Size(max = 100)
+    @Size(max = 10, message = "work order no must be between 10 characters!")
     private String workOrderNo;
     @Valid
     @NotEmpty
